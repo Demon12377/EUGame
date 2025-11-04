@@ -2,41 +2,38 @@
   import { onMount } from 'svelte';
   import Map from './lib/Map.svelte';
 
-  let tilesData = [];
-  let gameState = {};
-  let selectedColor = '#000000';
+  let regions = [];
+  let selectedColor = '#f00';
+  let tileData = {};
 
   onMount(async () => {
-    const res = await fetch('/data.txt');
-    const text = await res.text();
-    tilesData = text.split('\n').map((line, index) => {
-      const [id, name] = line.split(',');
-      return { id, name };
-    });
-
-    const savedState = localStorage.getItem('gameState');
-    if (savedState) {
-      gameState = JSON.parse(savedState);
-    } else {
-      tilesData.forEach(tile => {
-        gameState[tile.id] = '#ffffff';
-      });
-    }
+    const response = await fetch('/regions.txt');
+    const text = await response.text();
+    regions = text.split('\n').filter(Boolean);
+    loadTileData();
+    window.addEventListener('storage', loadTileData);
   });
 
+  function loadTileData() {
+    const storedData = localStorage.getItem('tileData');
+    if (storedData) {
+      tileData = JSON.parse(storedData);
+    } else {
+      tileData = {};
+    }
+  }
+
   function handleTileClick(event) {
-    const tileId = event.detail;
-    gameState[tileId] = selectedColor;
-    gameState = gameState; // Trigger reactivity
-    localStorage.setItem('gameState', JSON.stringify(gameState));
+    const id = event.detail.id;
+    tileData[id] = selectedColor;
+    localStorage.setItem('tileData', JSON.stringify(tileData));
+    // Svelte's reactivity will update the component
+    tileData = tileData;
   }
 
   function resetMap() {
-    tilesData.forEach(tile => {
-      gameState[tile.id] = '#ffffff';
-    });
-    gameState = gameState; // Trigger reactivity
-    localStorage.removeItem('gameState');
+    localStorage.removeItem('tileData');
+    tileData = {};
   }
 </script>
 
@@ -44,7 +41,7 @@
   <h1>Интерактивная карта</h1>
   <div class="container">
     <div class="map-container">
-      <Map {tilesData} {gameState} on:tileClick={handleTileClick} />
+      <Map {tileData} on:tileclick={handleTileClick} />
     </div>
     <div class="controls">
       <input type="color" bind:value={selectedColor} />
@@ -59,7 +56,7 @@
     gap: 20px;
   }
   .map-container {
-    width: 80%;
+    flex-grow: 1;
   }
   .controls {
     display: flex;
