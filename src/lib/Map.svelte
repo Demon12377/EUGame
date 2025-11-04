@@ -24,6 +24,9 @@
         d={paths[i]}
         style="fill:{gameState[tile.id] || '#ffffff'};stroke-width:0.25"
         on:click={() => handleTileClick(tile.id)}
+        on:keydown={(e) => e.key === 'Enter' && handleTileClick(tile.id)}
+        role="button"
+        tabindex="0"
       >
         <title>{tile.name}</title>
       </path>
