@@ -1,5 +1,5 @@
 <script>
-    import { territories, selected_territory } from '../../lib/store.js';
+    import { territories, selected_territory } from '$lib/store.js';
 
     function handlePathClick(pathId) {
         if ($selected_territory === pathId) {
