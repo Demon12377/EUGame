@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
 test('basic test', async ({ page }) => {
-  await page.goto('http://localhost:5173');
-  await expect(page).toHaveTitle(/Svelte App/);
+  await page.goto('/');
+  await expect(page).toHaveTitle(/svelte-map-app/);
 });
