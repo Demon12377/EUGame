@@ -22,5 +22,6 @@ const initialTerritories = {
 export const players = writable(initialPlayers);
 export const resources = writable(initialResources);
 export const territories = writable(initialTerritories);
+export const selected_territory = writable(null);
 export const currentPlayer = writable(1);
 export const turn = writable(1);
