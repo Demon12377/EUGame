@@ -34,7 +34,10 @@ def process_path(match):
     attrs['style'] = ';'.join(filter(None, style_parts))
 
     attrs['on:click'] = f"{{() => handlePathClick('{path_id}')}}"
+    attrs['on:keydown'] = f"{{(event) => {{ if (event.key === 'Enter' || event.key === ' ') handlePathClick('{path_id}'); }}}}"
     attrs['class:selected'] = f"{{$selected_territory === '{path_id}'}}"
+    attrs['role'] = "button"
+    attrs['tabindex'] = "0"
 
     new_attrs_str = ' '.join([f'{key}="{value}"' for key, value in attrs.items()])
 
@@ -43,7 +46,7 @@ def process_path(match):
 modified_svg_inner = re.sub(r'<path([^>]*)\/?>', process_path, svg_inner_content, flags=re.IGNORECASE | re.DOTALL)
 
 new_script_block = """<script>
-    import { territories, selected_territory } from '$lib/store.js';
+    import { territories, selected_territory } from '../../lib/store.js';
 
     function handlePathClick(pathId) {
         if ($selected_territory === pathId) {
