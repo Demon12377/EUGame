@@ -2,38 +2,38 @@
   import { onMount } from 'svelte';
   import Map from './lib/Map.svelte';
 
-  let regions = [];
-  let selectedColor = '#f00';
-  let tileData = {};
+  let locations = [];
+  let locationName = '';
+  let selectedColor = '#ff0000';
+  let selectedCountry = null;
 
-  onMount(async () => {
-    const response = await fetch('/regions.txt');
-    const text = await response.text();
-    regions = text.split('\n').filter(Boolean);
-    loadTileData();
-    window.addEventListener('storage', loadTileData);
+  onMount(() => {
+    const storedLocations = localStorage.getItem('locations');
+    if (storedLocations) {
+      locations = JSON.parse(storedLocations);
+    }
   });
 
-  function loadTileData() {
-    const storedData = localStorage.getItem('tileData');
-    if (storedData) {
-      tileData = JSON.parse(storedData);
-    } else {
-      tileData = {};
+  function handleCountryClick(event) {
+    selectedCountry = event.detail;
+  }
+
+  function assignLocation() {
+    if (!selectedCountry || !locationName) {
+      alert('Please select a country and enter a location name.');
+      return;
     }
-  }
 
-  function handleTileClick(event) {
-    const id = event.detail.id;
-    tileData[id] = selectedColor;
-    localStorage.setItem('tileData', JSON.stringify(tileData));
-    // Svelte's reactivity will update the component
-    tileData = tileData;
-  }
+    const newLocation = {
+      id: selectedCountry.id,
+      name: locationName,
+      color: selectedColor,
+    };
 
-  function resetMap() {
-    localStorage.removeItem('tileData');
-    tileData = {};
+    locations = [...locations.filter(loc => loc.id !== selectedCountry.id), newLocation];
+    localStorage.setItem('locations', JSON.stringify(locations));
+    locationName = '';
+    selectedCountry = null;
   }
 </script>
 
@@ -41,11 +41,22 @@
   <h1>Интерактивная карта</h1>
   <div class="container">
     <div class="map-container">
-      <Map {tileData} on:tileclick={handleTileClick} />
+      <Map {locations} on:countryclick={handleCountryClick} />
     </div>
     <div class="controls">
-      <input type="color" bind:value={selectedColor} />
-      <button on:click={resetMap}>Сбросить</button>
+      <h2>Режим ОПа</h2>
+      <div>
+        <label for="location-name">Название:</label>
+        <input id="location-name" type="text" bind:value={locationName} />
+      </div>
+      <div>
+        <label for="location-color">Цвет:</label>
+        <input id="location-color" type="color" bind:value={selectedColor} />
+      </div>
+      <button on:click={assignLocation}>Назначить</button>
+      {#if selectedCountry}
+        <p>Выбрана страна: {selectedCountry.name}</p>
+      {/if}
     </div>
   </div>
 </main>
@@ -62,5 +73,10 @@
     display: flex;
     flex-direction: column;
     gap: 10px;
+    width: 200px;
+  }
+  label {
+    display: block;
+    margin-bottom: 5px;
   }
 </style>
